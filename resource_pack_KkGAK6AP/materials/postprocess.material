@@ -1,0 +1,31 @@
+{
+    "materials": {
+        "version": "1.0.0",
+        "spawn_range": {
+            "vertexShader": "shaders/fullscreen.vertex",
+            "fragmentShader": "shaders/spawn_range.fragment",
+            "vertexFields": [
+                { "field": "Position" },
+                { "field": "UV0" }
+            ],
+            "blendSrc": "One",
+            "blendDst": "Zero",
+            "depthFunc": "Always",
+            "depthTest": false,
+            "depthWrite": false,
+            "msaaSupport": "Both",
+            "samplerStates": [
+                {
+                    "samplerIndex": 0,
+                    "textureWrap": "Clamp",
+                    "textureFilter": "Nearest"
+                },
+                {
+                    "samplerIndex": 2,
+                    "textureWrap": "Clamp",
+                    "textureFilter": "Nearest"
+                }
+            ]
+        }
+    }
+}
