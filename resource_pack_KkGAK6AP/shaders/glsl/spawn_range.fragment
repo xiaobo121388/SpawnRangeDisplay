@@ -1,0 +1,62 @@
+// __multiversion__
+// This signals the loading code to prepend either #version 100 or #version 300 es as apropriate.
+precision highp float;
+
+#include "fragmentVersionCentroidUV.h"
+#include "uniformPerFrameConstants.h"
+#include "uniformWorldConstants.h"
+#include "uniformRenderChunkConstants.h"
+#include "util.h"
+
+LAYOUT_BINDING(0) uniform sampler2D TEXTURE_0; // Color
+LAYOUT_BINDING(1) uniform sampler2D TEXTURE_1; // Aux (not used here usually)
+LAYOUT_BINDING(2) uniform sampler2D TEXTURE_2; // Depth
+
+uniform vec4 EXTRA_VECTOR1; // x=enable, y=red, z=green, w=blue
+uniform vec4 EXTRA_VECTOR2; // x=min_dist, y=max_dist, z=unused, w=unused
+
+highp vec3 get_world_position(vec2 uv, float z) {
+	highp vec4 pos_clip = vec4(uv, z, 1.0) * 2.0 - 1.0;
+	highp vec4 pos_world = inverse(PROJ*WORLDVIEW) * pos_clip;
+	return pos_world.xyz / pos_world.w;
+}
+
+void main() {
+    vec4 color = texture2D(TEXTURE_0, uv);
+    
+    // Check if enabled (Removed check, controlled by pass enable)
+    // if (EXTRA_VECTOR1.x < 0.5) {
+    //    gl_FragColor = color;
+    //    return;
+    // }
+
+    float depth = texture2D(TEXTURE_2, uv).r;
+    
+    // Reconstruct world position
+    highp vec3 world_pos = get_world_position(uv, depth);
+    
+    // Calculate distance from camera
+    float dist = length(world_pos);
+    
+    // Spawn Range Logic (Dynamic)
+    // Default to 24-44 if EXTRA_VECTOR2 is 0 (uninitialized)
+    float minDist = EXTRA_VECTOR2.x > 0.1 ? EXTRA_VECTOR2.x : 24.0;
+    float maxDist = EXTRA_VECTOR2.y > 0.1 ? EXTRA_VECTOR2.y : 44.0;
+    
+    float inRange = step(minDist, dist) * step(dist, maxDist);
+    
+    // Smooth edges (optional, from terrain.fsh)
+    // max(smoothstep(25.,24.,dist),smoothstep(43.,44.,dist))
+    
+    if (inRange > 0.5) {
+        // Mix with spawn range color
+        // Using EXTRA_VECTOR1.yzw as color
+        vec3 rangeColor = vec3(EXTRA_VECTOR1.y, EXTRA_VECTOR1.z, EXTRA_VECTOR1.w);
+        // Hardcoded alpha/intensity for now, or use a fixed value like 0.5
+        float alpha = 0.4; 
+        
+        color.rgb = mix(color.rgb, rangeColor, alpha);
+    }
+    
+    gl_FragColor = color;
+}
