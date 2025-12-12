@@ -2,10 +2,10 @@
   "UID": "bf81dadaa8564dfe8a0a4b40a41fed7a",
   "Language": 0,
   "Type": 7,
-  "Versions": null,
+  "Versions": [],
   "JavaType": 8,
-  "Name": "自定义刷怪范围",
-  "UpdateTime": "2025-11-26T11:29:09.6191657+08:00",
+  "Name": "刷怪范围显示",
+  "UpdateTime": "2025-12-12T21:56:36.3016777+08:00",
   "IconName": "",
   "Md5": null,
   "CloudMd5": null,
@@ -52,7 +52,7 @@
   "TestExperimentalModding": false,
   "TestStartWithMap": false,
   "SelectComponents": [
-    "bd45ea262eed4d1d8777309c13481af6",
+    "00e5b56ee20f4a588cd237bd381da1f9",
     "bf81dadaa8564dfe8a0a4b40a41fed7a"
   ],
   "isSlim": false,

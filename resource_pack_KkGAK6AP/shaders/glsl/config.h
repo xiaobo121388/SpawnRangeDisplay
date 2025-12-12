@@ -3,7 +3,7 @@
 
 #define NIGHT_VISON
 #define RSLV
-#define COMPASS 256.0//size
+//#define COMPASS 256.0//size
 
 #define CHUNK_BORDER
 	/////advanced setting/////

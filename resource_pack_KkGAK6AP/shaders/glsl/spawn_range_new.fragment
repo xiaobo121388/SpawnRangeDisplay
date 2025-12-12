@@ -13,7 +13,7 @@ LAYOUT_BINDING(1) uniform sampler2D TEXTURE_1; // Aux (not used here usually)
 LAYOUT_BINDING(2) uniform sampler2D TEXTURE_2; // Depth
 
 uniform vec4 EXTRA_VECTOR1; // x=enable, y=red, z=green, w=blue
-uniform vec4 EXTRA_VECTOR2; // x=min_dist, y=max_dist, z=unused, w=unused
+uniform vec4 EXTRA_VECTOR2; // x=min_dist, y=max_dist, z=manhattan_limit, w=unused
 
 highp vec3 get_view_position(vec2 uv, float z) {
 	highp vec4 pos_clip = vec4(uv, z, 1.0) * 2.0 - 1.0;
@@ -38,12 +38,21 @@ void main() {
     // Calculate distance from camera
     float dist = length(view_pos);
     
+    // Calculate Manhattan distance (relative to camera, world aligned)
+    // Rotate view_pos back to world alignment using inverse of View Matrix rotation
+    // WORLDVIEW transforms World -> View. The upper 3x3 is the rotation.
+    // We want View -> World (relative), so we use inverse(mat3(WORLDVIEW)).
+    vec3 world_rel_pos = inverse(mat3(WORLDVIEW)) * view_pos;
+    float manhattanDist = abs(world_rel_pos.x) + abs(world_rel_pos.z);
+    
     // Spawn Range Logic (Dynamic)
     // Default to 24-44 if EXTRA_VECTOR2 is 0 (uninitialized)
     float minDist = EXTRA_VECTOR2.x > 0.1 ? EXTRA_VECTOR2.x : 24.0;
     float maxDist = EXTRA_VECTOR2.y > 0.1 ? EXTRA_VECTOR2.y : 44.0;
+    // Default Manhattan limit to very large if not set (z=0)
+    float manhattanLimit = EXTRA_VECTOR2.z > 0.1 ? EXTRA_VECTOR2.z : 9999.0;
     
-    float inRange = step(minDist, dist) * step(dist, maxDist);
+    float inRange = step(minDist, dist) * step(dist, maxDist) * step(manhattanDist, manhattanLimit);
     
     // Smooth edges (optional, from terrain.fsh)
     // max(smoothstep(25.,24.,dist),smoothstep(43.,44.,dist))
